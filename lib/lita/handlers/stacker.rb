@@ -9,7 +9,7 @@ module Lita
       def lifo_add(response)
         return if is_incompatible?(response)
         redis.rpush(response.message.source.room, response.user.name)
-        response.reply("Noted in #{response.message.source.room}, @#{response.user.mention_name}")
+        response.reply("Noted, @#{response.user.mention_name}")
       end
 
       def lifo_peek(response)
