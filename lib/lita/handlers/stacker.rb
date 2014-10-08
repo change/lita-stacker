@@ -2,6 +2,7 @@ module Lita
   module Handlers
     class Stacker < Handler
       route %r{^stack$}, :lifo_add
+      route %r{^unstack$}, :lifo_remove
       route %r{^stack drop}, :lifo_remove
       route %r{^stack show}, :lifo_peek
       route %r{^stack clear}, :lifo_clear
