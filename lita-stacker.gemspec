@@ -3,9 +3,9 @@ Gem::Specification.new do |spec|
   spec.version       = "0.0.1"
   spec.authors       = ["Kyle VanderBeek"]
   spec.email         = ["kyle@change.org"]
-  spec.description   = %q{TODO: Add a description}
-  spec.summary       = %q{TODO: Add a summary}
-  spec.homepage      = "TODO: Add a homepage"
+  spec.summary       = %q{A Lita handler for keeping order of people who wish to speak.}
+  spec.description   = %q{Keeps a queue of people who have "stacked" on the current point of order.}
+  spec.homepage      = "http://github.com/change/lita-stacker"
   spec.license       = "MIT"
   spec.metadata      = { "lita_plugin_type" => "handler" }
 
