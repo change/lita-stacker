@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = "lita-stacker"
-  spec.version       = "0.0.2"
+  spec.version       = "0.0.3"
   spec.authors       = ["Kyle VanderBeek"]
   spec.email         = ["kyle@change.org"]
   spec.summary       = %q{A Lita handler for keeping order of people who wish to speak.}
