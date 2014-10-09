@@ -1,15 +1,16 @@
 module Lita
   module Handlers
     class Stacker < Handler
-      route %r{^stack$}, :lifo_add
-      route %r{^unstack$}, :lifo_remove
+      route %r{^stack(\s+\@\p{Word}+\s*)?$}, :lifo_add
+      route %r{^unstack(\s+\@\p{Word}+\s*)?$}, :lifo_remove
       route %r{^stack drop}, :lifo_remove
       route %r{^stack show}, :lifo_peek
       route %r{^stack clear}, :lifo_clear
 
       def lifo_add(response)
         return if is_incompatible?(response)
-        redis.rpush(response.message.source.room, response.user.name)
+
+        redis.rpush(response.message.source.room, pick_subject(response))
       end
 
       def lifo_peek(response)
@@ -27,8 +28,10 @@ module Lita
 
       def lifo_remove(response)
         return if is_incompatible?(response)
-        redis.lrem(response.message.source.room, 0, response.user.name)
-        response.reply("@#{response.user.mention_name} left the stack.")
+
+        to_remove = pick_subject(response)
+        redis.lrem(response.message.source.room, 0, to_remove)
+        response.reply("@#{to_remove} gone from stack.")
       end
 
       def lifo_clear(response)
@@ -41,6 +44,10 @@ module Lita
 
       def is_incompatible?(response)
         response.message.source.private_message?
+      end
+
+      def pick_subject(response)
+        (response.message.args[0] || response.user.mention_name).tr('@', '')
       end
     end
 
