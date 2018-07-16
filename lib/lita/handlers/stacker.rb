@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 module Lita
   module Handlers
     class Stacker < Handler
-      route %r{^stack(\s+\@\p{Word}+\s*)?$}, :lifo_add
-      route %r{^unstack(\s+\@\p{Word}+\s*)?$}, :lifo_remove
-      route %r{^stack drop}, :lifo_remove
-      route %r{^stack show}, :lifo_peek
-      route %r{^stack clear}, :lifo_clear
+      route /^stack(\s+\@\p{Word}+\s*)?$/, :lifo_add
+      route /^unstack(\s+\@\p{Word}+\s*)?$/, :lifo_remove
+      route /^stack drop/, :lifo_remove
+      route /^stack show/, :lifo_peek
+      route /^stack clear/, :lifo_clear
 
       def lifo_add(response)
         return if is_incompatible?(response)
@@ -18,7 +20,7 @@ module Lita
         contents = redis.lrange(response.message.source.room, 0, -1)
 
         if contents.empty?
-          response.reply("The stack is empty.")
+          response.reply('The stack is empty.')
           return
         end
 
