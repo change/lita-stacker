@@ -3,11 +3,10 @@
 module Lita
   module Handlers
     class Stacker < Handler
-      route(/^stack(\s+\@\p{Word}+\s*)?$/, :lifo_add)
-      route(/^unstack(\s+\@\p{Word}+\s*)?$/, :lifo_remove)
-      route(/^stack drop/, :lifo_remove)
-      route(/^stack show/, :lifo_peek)
-      route(/^stack clear/, :lifo_clear)
+      route(/^stack(\s+(on.*|\@\p{Word}+\s*))?$/, :lifo_add)
+      route(/^(unstack|stack (drop|done))(\s+\@\p{Word}+\s*)?$/, :lifo_remove)
+      route(/^stacks? show/, :lifo_peek)
+      route(/^stacks? clear/, :lifo_clear)
 
       def lifo_add(response)
         return if incompatible?(response)
@@ -49,7 +48,14 @@ module Lita
       end
 
       def pick_subject(response)
-        (response.message.args[0] || response.user.mention_name).tr('@', '')
+        subject = response.user.mention_name.tr('@', '')
+        if response.message.args[0]
+          arg = response.message.args[0].dup
+          if arg.tr!('@', '')
+            subject = arg
+          end
+        end
+        subject
       end
     end
 
