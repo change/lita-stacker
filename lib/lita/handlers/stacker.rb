@@ -3,11 +3,11 @@
 module Lita
   module Handlers
     class Stacker < Handler
-      route /^stack(\s+\@\p{Word}+\s*)?$/, :lifo_add
-      route /^unstack(\s+\@\p{Word}+\s*)?$/, :lifo_remove
-      route /^stack drop/, :lifo_remove
-      route /^stack show/, :lifo_peek
-      route /^stack clear/, :lifo_clear
+      route(/^stack(\s+\@\p{Word}+\s*)?$/, :lifo_add)
+      route(/^unstack(\s+\@\p{Word}+\s*)?$/, :lifo_remove)
+      route(/^stack drop/, :lifo_remove)
+      route(/^stack show/, :lifo_peek)
+      route(/^stack clear/, :lifo_clear)
 
       def lifo_add(response)
         return if is_incompatible?(response)
