@@ -10,13 +10,13 @@ module Lita
       route(/^stack clear/, :lifo_clear)
 
       def lifo_add(response)
-        return if is_incompatible?(response)
+        return if incompatible?(response)
 
         redis.rpush(response.message.source.room, pick_subject(response))
       end
 
       def lifo_peek(response)
-        return if is_incompatible?(response)
+        return if incompatible?(response)
         contents = redis.lrange(response.message.source.room, 0, -1)
 
         if contents.empty?
@@ -29,7 +29,7 @@ module Lita
       end
 
       def lifo_remove(response)
-        return if is_incompatible?(response)
+        return if incompatible?(response)
 
         to_remove = pick_subject(response)
         redis.lrem(response.message.source.room, 0, to_remove)
@@ -37,14 +37,14 @@ module Lita
       end
 
       def lifo_clear(response)
-        return if is_incompatible?(response)
+        return if incompatible?(response)
         redis.del(response.message.source.room)
         response.reply("Stacks cleared by @#{response.user.mention_name}")
       end
 
       private
 
-      def is_incompatible?(response)
+      def incompatible?(response)
         response.message.source.private_message?
       end
 
