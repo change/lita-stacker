@@ -16,12 +16,21 @@ describe Lita::Handlers::Stacker, lita_handler: true do
   it { is_expected.to route_command('stack clear').to(:lifo_clear) }
   it { is_expected.to route_command('stacks clear').to(:lifo_clear) }
 
-  shared_context 'in a room' do
-    let(:command_options) { { from: Lita::Room.create_or_update('#public_channel') } }
+  shared_examples 'a private chat' do
+    let(:command_options) { {} }
+
+    before do
+      send_command(command, command_options)
+      send_command 'stack show', command_options
+    end
+
+    it 'does nothing' do
+      expect(replies).to be_empty
+    end
   end
 
-  shared_context 'in a private chat' do
-    let(:command_options) { {} }
+  shared_context 'in a room' do
+    let(:command_options) { { from: Lita::Room.create_or_update('#public_channel') } }
   end
 
   describe '#lifo_add' do
@@ -33,14 +42,7 @@ describe Lita::Handlers::Stacker, lita_handler: true do
     context 'with an empty command' do
       let(:command) { 'stack' }
 
-      context 'when the message is private' do
-        include_context 'in a private chat'
-
-
-        it 'does nothing' do
-          expect(replies).to be_empty
-        end
-      end
+      it_behaves_like 'a private chat'
 
       context 'when the message is in a room' do
         include_context 'in a room'
@@ -55,14 +57,7 @@ describe Lita::Handlers::Stacker, lita_handler: true do
       let(:other_user) { Lita::User.create(123, name: 'Zaphod') }
       let(:command) { "stack @#{other_user.name}" }
 
-      context 'when the message is private' do
-        include_context 'in a private chat'
-
-
-        it 'does nothing' do
-          expect(replies).to be_empty
-        end
-      end
+      it_behaves_like 'a private chat'
 
       context 'when the message is in a room' do
         include_context 'in a room'
@@ -76,14 +71,7 @@ describe Lita::Handlers::Stacker, lita_handler: true do
     context 'with an on command' do
       let(:command) { 'stack on that' } # perhaps this should jump to the top?
 
-      context 'when the message is private' do
-        include_context 'in a private chat'
-
-
-        it 'does nothing' do
-          expect(replies).to be_empty
-        end
-      end
+      it_behaves_like 'a private chat'
 
       context 'when the message is in a room' do
         include_context 'in a room'
@@ -96,6 +84,8 @@ describe Lita::Handlers::Stacker, lita_handler: true do
 
     context 'with a non-matching command' do
       let(:command) { 'stack some boxes' }
+
+      it_behaves_like 'a private chat'
 
       context 'when the message is in a room' do
         include_context 'in a room'
