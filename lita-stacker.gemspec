@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'lita', '~> 4.0'
 
   spec.add_development_dependency 'bundler', '~> 1.16'
+  spec.add_development_dependency 'byebug'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec', '>= 3.7.0'
   spec.add_development_dependency 'rubocop', '>= 0.58.1'
