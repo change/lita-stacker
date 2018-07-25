@@ -7,3 +7,10 @@ Style/Documentation:
 Metrics/BlockLength:
   Exclude:
     - spec/**/*_spec.rb
+
+Metrics/AbcSize:
+  Max: 20
+
+# Rely on AbcSize
+MethodLength:
+  Enabled: false
