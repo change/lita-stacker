@@ -3,6 +3,8 @@
 module Lita
   module Handlers
     class Stacker < Handler
+      VERSION = '0.2.0'
+
       route(/^stack(\s+(on.*|\@\p{Word}+\s*))?$/, :lifo_add, help: {
               t('add.help.simple.command') => t('add.help.simple.description'),
               t('add.help.on.command') => t('add.help.on.description'),

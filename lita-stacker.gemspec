@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+lib = File.expand_path('lib', __dir__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'lita-stacker'
+
 Gem::Specification.new do |spec|
   spec.name          = 'lita-stacker'
-  spec.version       = '0.1.0'
+  spec.version       = Lita::Handlers::Stacker::VERSION
   spec.authors       = ['Kyle VanderBeek']
   spec.email         = ['kyle@change.org']
   spec.summary       = 'A Lita handler for keeping order of people who wish to speak.'
