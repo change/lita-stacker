@@ -41,14 +41,20 @@ module Lita
           return redis.call('lindex', KEYS[1], -2)
         LUA
 
-        result = redis.eval(script, [response.message.source.room], [pick_subject(response)])
+        user_to_add = pick_subject(response)
+
+        result = redis.eval(script, [response.message.source.room], [user_to_add])
 
         if result == -1
           response.reply(t('add.collision'))
           return
         end
 
-        response.reply(t('add.after', after: "@#{result}"))
+        if result
+          response.reply(t('add.after', after: "@#{result}"))
+        else
+          response.reply(t('add.first', user: "@#{user_to_add}"))
+        end
       end
 
       def lifo_peek(response)

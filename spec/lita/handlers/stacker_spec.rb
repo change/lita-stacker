@@ -31,9 +31,11 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
   end
 
   describe '#lifo_add' do
+    let(:existing_stack) { [] }
+
     before do
+      existing_stack.each { |s| send_command("stack @#{s}", command_options) }
       send_command(command, command_options)
-      send_command 'stack show', command_options
     end
 
     shared_examples 'adding users' do
@@ -42,13 +44,31 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
       context 'when the message is in a room' do
         include_context 'in a room'
 
+        it 'informs the user they have the floor' do
+          expect(replies.last).to include 'have the floor'
+        end
+
         it 'adds the current user' do
+          send_command 'stack show', command_options
           expect(replies.last).to include(target_user.name)
+        end
+
+        context 'when there is a stack' do
+          let(:existing_stack) { ['Trillian'] }
+
+          it 'informs the user who is before them' do
+            expect(replies.last).to include "after @#{existing_stack.last}"
+          end
+
+          it 'adds the user' do
+            send_command 'stack show', command_options
+            expect(replies.last).to include(target_user.mention_name)
+          end
         end
 
         context 'when the user is already in the stack' do
           before do
-            send_command command, command_options
+            send_command(command, command_options)
           end
 
           it 'informs the user' do
@@ -95,6 +115,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
         include_context 'in a room'
 
         it 'adds the current user' do
+          send_command 'stack show', command_options
           expect(replies.last).to eq('The stack is empty!')
         end
       end

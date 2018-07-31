@@ -4,6 +4,7 @@ en:
       stacker:
         add:
           collision: You are already in the stack list!
+          first: '%{user} you have the floor!'
           after: You have been added after %{after}.
           help:
             simple:
