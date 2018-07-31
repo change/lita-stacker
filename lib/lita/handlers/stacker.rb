@@ -51,7 +51,7 @@ module Lita
         end
 
         if result
-          response.reply(t('add.after', after: "@#{result}"))
+          response.reply(t('add.after', user: "@#{user_to_add}", after: "@#{result}"))
         else
           response.reply(t('add.first', user: "@#{user_to_add}"))
         end
@@ -98,7 +98,7 @@ module Lita
       def lifo_clear(response)
         return if incompatible?(response)
         redis.del(response.message.source.room)
-        response.reply(t('clear.complete', user: response.user.mention_name))
+        response.reply(t('clear.complete', user: "@#{response.user.mention_name}"))
       end
 
       private
