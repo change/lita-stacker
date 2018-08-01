@@ -72,7 +72,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
           end
 
           it 'informs the user' do
-            expect(replies.last).to include('already')
+            expect(replies.last).to match(/#{sentence_subject}.*already/)
           end
 
           it 'does not add to the stack' do
@@ -88,6 +88,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
       include_examples 'adding users' do
         let(:target_user) { user }
+        let(:sentence_subject) { 'You' }
       end
     end
 
@@ -95,7 +96,9 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
       let(:target_user) { Lita::User.create(123, name: 'Zaphod') }
       let(:command) { "stack @#{target_user.name}" }
 
-      include_examples 'adding users'
+      include_examples 'adding users' do
+        let(:sentence_subject) { "@#{target_user.mention_name}" }
+      end
     end
 
     context 'with an on command' do
@@ -103,6 +106,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
       include_examples 'adding users' do
         let(:target_user) { user }
+        let(:sentence_subject) { 'You' }
       end
     end
 
@@ -191,7 +195,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
       it 'informs the user' do
         send_command(command, command_options)
-        expect(replies.last).to include "cleared by #{user.mention_name}"
+        expect(replies.last).to include "cleared by @#{user.mention_name}"
       end
     end
   end

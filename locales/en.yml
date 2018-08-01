@@ -3,7 +3,9 @@ en:
     handlers:
       stacker:
         add:
-          collision: You are already in the stack list!
+          collision:
+            self: You are already in the stack list!
+            other: '%{user} is already in the stack list!'
           first: '%{user}, you have the floor!'
           after: '%{user} has been added after %{after}.'
           help:

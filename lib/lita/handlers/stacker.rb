@@ -29,7 +29,7 @@ module Lita
 
         # There is no LSCAN Redis command, so we can hack one.
         # I am pretty sure Lita is synchronous so it is not possible for this
-        # to be inconsistent. But in the iterest of robustness, run it as a
+        # to be inconsistent. But in the interest of robustness, run it as a
         # Lua script, to keep it atomic.
         script = <<~LUA
           for i=0,(redis.call('llen', KEYS[1])-1) do
@@ -46,7 +46,8 @@ module Lita
         result = redis.eval(script, [response.message.source.room], [user_to_add])
 
         if result == -1
-          response.reply(t('add.collision'))
+          type = response.user.mention_name.tr('@', '') == user_to_add ? 'self' : 'other'
+          response.reply(t("add.collision.#{type}", user: "@#{user_to_add}"))
           return
         end
 
