@@ -2,3 +2,52 @@ en:
   lita:
     handlers:
       stacker:
+        add:
+          collision:
+            self: You are already in the stack list!
+            other: '%{user} is already in the stack list!'
+          first: '%{user}, you have the floor!'
+          after: '%{user} has been added after %{after}.'
+          help:
+            simple:
+              command: stack
+              description: Add yourself to the stack list
+            'on':
+              command: 'stack on […]'
+              description: Add yourself to the stack list
+            another:
+              command: 'stack @user'
+              description: add @user to the stack list
+        remove:
+          complete:
+            first: '%{user} is gone from the stack. %{next_user} is up next.'
+            other: '%{user} is gone from the stack.'
+          help:
+            unstack:
+              command: 'unstack [@user]'
+              description: 'remove yourself (or @user) from the stack list'
+            done:
+              command: 'stack done [@user]'
+              description: 'remove yourself (or @user) from the stack list'
+            drop:
+              command: 'stack drop [@user]'
+              description: 'remove yourself (or @user) from the stack list'
+        peek:
+          empty: The stack is empty!
+          list: "Stacks:\n%{newline_separated_list}"
+          help:
+            singular:
+              command: stack show
+              description: show the list of stacks
+            plural:
+              command: stacks show
+              description: show the list of stacks
+        clear:
+          complete: 'Stacks cleared by %{user}'
+          help:
+            singular:
+              command: stack clear
+              description: clear the list of stacks
+            plural:
+              command: stacks clear
+              description: clear the list of stacks
