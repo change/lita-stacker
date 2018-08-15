@@ -4,8 +4,8 @@ en:
       stacker:
         add:
           collision:
-            first: '%{user} already has the floor. Please use `unstack` when you are done.'
-            after: '%{user} is already in the stack list, behind %{after}'
+            first: '%{user} already has the floor. Please use `unstack` when you are done, or `restack` to change your position to the bottom.'
+            after: '%{user} is already in the stack list, behind %{after}. Please use `restack` if you wish to change your position to the bottom.'
           first: '%{user}, you have the floor! Please use `unstack` when you are done.'
           after: '%{user} has been added after %{after}.'
           help:
@@ -32,6 +32,10 @@ en:
             drop:
               command: 'stack drop [@user]'
               description: 'remove yourself (or @user) from the stack list'
+        readd:
+          help:
+            command: 'restack [@user]'
+            description: 'remove and readd yourself (or @user) to the stack list'
         peek:
           empty: The stack is empty!
           list: "Stacks:\n%{newline_separated_list}"

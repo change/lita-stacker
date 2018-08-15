@@ -19,6 +19,9 @@ module Lita
               t('remove.help.done.command') => t('remove.help.done.description'),
               t('remove.help.drop.command') => t('remove.help.drop.description')
             })
+      route(/^restack(\s+\@\p{Word}+\s*)?$/, :lifo_requeue, help: {
+              t('remove.help.restack.command') => t('remove.help.restack.description')
+            })
       route(/^stacks? (show|list)/, :lifo_peek, help: {
               t('peek.help.show.singular.command') => t('peek.help.show.singular.description'),
               t('peek.help.show.plural.command') => t('peek.help.show.plural.description'),
@@ -102,6 +105,11 @@ module Lita
         else
           response.reply(t('remove.complete.other', user: to_remove))
         end
+      end
+
+      def lifo_requeue(response)
+        lifo_remove(response)
+        lifo_add(response)
       end
 
       def lifo_clear(response)

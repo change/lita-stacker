@@ -9,6 +9,8 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
   it { is_expected.to route_command('unstack @user').to(:lifo_remove) }
   it { is_expected.to route_command('stack drop').to(:lifo_remove) }
   it { is_expected.to route_command('stack done').to(:lifo_remove) }
+  it { is_expected.to route_command('restack').to(:lifo_requeue) }
+  it { is_expected.to route_command('restack @user').to(:lifo_requeue) }
   it { is_expected.to route_command('stack show').to(:lifo_peek) }
   it { is_expected.to route_command('stacks show').to(:lifo_peek) }
   it { is_expected.to route_command('stack clear').to(:lifo_clear) }
@@ -197,6 +199,76 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
         it 'does not announce the first user' do
           send_command("unstack #{other_user.mention_name}", command_options)
           expect(replies.last).not_to include user.mention_name
+        end
+      end
+    end
+  end
+
+  describe '#lifo_requeue' do
+    let(:command) { 'restack' }
+
+    it_behaves_like 'a private chat'
+
+    context 'when the message is in a room' do
+      include_context 'in a room'
+
+      it_behaves_like 'it clears old stacks'
+
+      shared_examples 'it adds the user at the bottom' do
+        it 'adds the user at the bottom' do
+          send_command(command, command_options)
+          send_command('stack show', command_options)
+          expect(replies.last).to end_with user.mention_name
+        end
+
+        it 'does not duplicate the stack' do
+          send_command(command, command_options)
+          send_command('stack show', command_options)
+          expect(replies.last.scan(/#{user.mention_name}/).count).to eq 1
+        end
+      end
+
+      context 'when the user is not in the stack' do
+        it_behaves_like 'it adds the user at the bottom'
+      end
+
+      context 'when the user is in the stack' do
+        before do
+          send_command('stack @Trillian', command_options)
+          send_command('stack', command_options)
+        end
+
+        context 'when they are first' do
+          before { send_command('unstack @Trillian', command_options) }
+
+          context 'when there is someone else in the stack' do
+            before { send_command('stack @Trillian', command_options) }
+
+            it_behaves_like 'it adds the user at the bottom'
+
+            it 'announces the next user' do
+              send_command(command, command_options)
+              expect(replies[-2]).to include 'Trillian'
+            end
+          end
+
+          context 'when there is not somone else in the stack' do
+            it_behaves_like 'it adds the user at the bottom'
+
+            it 'does not announce the next user' do
+              send_command(command, command_options)
+              expect(replies[-2]).not_to include 'floor'
+            end
+          end
+        end
+
+        context 'when they are not first' do
+          it_behaves_like 'it adds the user at the bottom'
+
+          it 'does not announce the next user' do
+            send_command(command, command_options)
+            expect(replies[-2]).not_to include 'floor'
+          end
         end
       end
     end
