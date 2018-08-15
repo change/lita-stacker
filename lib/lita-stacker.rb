@@ -7,3 +7,4 @@ Lita.load_locales Dir[File.expand_path(
 )]
 
 require 'lita/handlers/stacker'
+require 'lita/handlers/stacker/upgrade/sorted_sets'
