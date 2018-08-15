@@ -19,9 +19,11 @@ module Lita
               t('remove.help.done.command') => t('remove.help.done.description'),
               t('remove.help.drop.command') => t('remove.help.drop.description')
             })
-      route(/^stacks? show/, :lifo_peek, help: {
-              t('peek.help.singular.command') => t('peek.help.singular.description'),
-              t('peek.help.plural.command') => t('peek.help.plural.description')
+      route(/^stacks? (show|list)/, :lifo_peek, help: {
+              t('peek.help.show.singular.command') => t('peek.help.show.singular.description'),
+              t('peek.help.show.plural.command') => t('peek.help.show.plural.description'),
+              t('peek.help.list.singular.command') => t('peek.help.list.singular.description'),
+              t('peek.help.list.plural.command') => t('peek.help.list.plural.description')
             })
       route(/^stacks? clear/, :lifo_clear, help: {
               t('clear.help.singular.command') => t('clear.help.singular.description'),

@@ -36,12 +36,20 @@ en:
           empty: The stack is empty!
           list: "Stacks:\n%{newline_separated_list}"
           help:
-            singular:
-              command: stack show
-              description: show the list of stacks
-            plural:
-              command: stacks show
-              description: show the list of stacks
+            show:
+              singular:
+                command: stack show
+                description: show the list of stacks
+              plural:
+                command: stacks show
+                description: show the list of stacks
+            list:
+              singular:
+                command: stack list
+                description: show the list of stacks
+              plural:
+                command: stacks list
+                description: show the list of stacks
         clear:
           complete: 'Stacks cleared by %{user}'
           help:

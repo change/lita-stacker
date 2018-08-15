@@ -94,7 +94,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
           it 'does not add to the stack' do
             send_command 'stack show', command_options
-            expect(replies.last.split(/\n/).grep(/\d+\. @?#{target_user.mention_name}/).size).to eq 1
+            expect(replies.last.scan(/^\d+\.\s*@?#{target_user.mention_name}/).count).to eq 1
           end
         end
       end
