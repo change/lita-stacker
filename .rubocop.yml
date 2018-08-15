@@ -14,3 +14,6 @@ Metrics/AbcSize:
 # Rely on AbcSize
 MethodLength:
   Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false

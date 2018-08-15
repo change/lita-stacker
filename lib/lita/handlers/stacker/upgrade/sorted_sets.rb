@@ -21,19 +21,28 @@ module Lita
             return if redis.exists(SUPPORT_KEY)
 
             redis.keys.each do |key|
-              next unless redis.type(key) == 'list'
-              list = redis.lrange(key, 0, -1)
-              list = list.uniq
-
-              redis.del(key)
-
-              # Add an offset so the scores are not identical
-              offset = config.offset
-              values = list.each_with_index.map { |name, i| [Time.now.to_f - config.timeout + offset * i, name] }
-              redis.zadd(key, values)
+              update_key(key)
             end
 
             redis.incr(SUPPORT_KEY)
+          end
+
+          private
+
+          def update_key(key)
+            return unless redis.type(key) == 'list'
+            list = redis.lrange(key, 0, -1).uniq
+
+            redis.del(key)
+
+            values = list_scores(list)
+            redis.zadd(key, values)
+          end
+
+          def list_scores(list)
+            # Add an offset so the scores are not identical
+            offset = config.offset
+            list.each_with_index.map { |name, i| [Time.now.to_f - config.timeout + offset * i, name] }
           end
         end
       end

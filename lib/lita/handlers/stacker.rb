@@ -41,26 +41,9 @@ module Lita
         clean_stack(response.message.source.room)
         score = redis.zscore(response.message.source.room, user_to_add)
 
-        if score
-          predecessors = redis.zrevrangebyscore(response.message.source.room, "(#{score}", 0)
-          type = predecessors.empty? ? 'first' : 'after'
-          response.reply(t("add.collision.#{type}", user: "@#{user_to_add}", after: after_list(predecessors)))
-          return
-        end
+        return add_collision(response, user_to_add, score, response.message.source.room) if score
 
-        script = <<~LUA
-          local predecessors = redis.call('zrangebyscore', KEYS[1], '-inf', '+inf')
-          redis.call('zadd', KEYS[1], ARGV[2], ARGV[1])
-          return predecessors
-        LUA
-
-        result = redis.eval(script, [response.message.source.room], [user_to_add, Time.now.to_f])
-
-        if result.empty?
-          response.reply(t('add.first', user: "@#{user_to_add}"))
-        else
-          response.reply(t('add.after', user: "@#{user_to_add}", after: after_list(result)))
-        end
+        add_without_collision(response, user_to_add, response.message.source.room)
       end
 
       def lifo_peek(response)
@@ -139,6 +122,28 @@ module Lita
           subject = arg if arg.tr!('@', '')
         end
         subject
+      end
+
+      def add_without_collision(response, user_to_add, room)
+        script = <<~LUA
+          local predecessors = redis.call('zrangebyscore', KEYS[1], '-inf', '+inf')
+          redis.call('zadd', KEYS[1], ARGV[2], ARGV[1])
+          return predecessors
+        LUA
+
+        result = redis.eval(script, [room], [user_to_add, Time.now.to_f])
+
+        if result.empty?
+          response.reply(t('add.first', user: "@#{user_to_add}"))
+        else
+          response.reply(t('add.after', user: "@#{user_to_add}", after: after_list(result)))
+        end
+      end
+
+      def add_collision(response, user_to_add, score, room)
+        predecessors = redis.zrevrangebyscore(room, "(#{score}", 0)
+        type = predecessors.empty? ? 'first' : 'after'
+        response.reply(t("add.collision.#{type}", user: "@#{user_to_add}", after: after_list(predecessors)))
       end
     end
 
