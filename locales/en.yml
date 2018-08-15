@@ -4,9 +4,9 @@ en:
       stacker:
         add:
           collision:
-            self: You are already in the stack list!
-            other: '%{user} is already in the stack list!'
-          first: '%{user}, you have the floor!'
+            first: '%{user} already has the floor. Please use `unstack` when you are done.'
+            after: '%{user} is already in the stack list, behind %{after}'
+          first: '%{user}, you have the floor! Please use `unstack` when you are done.'
           after: '%{user} has been added after %{after}.'
           help:
             simple:
@@ -20,7 +20,7 @@ en:
               description: add @user to the stack list
         remove:
           complete:
-            first: '%{user} is gone from the stack. %{next_user} is up next.'
+            first: '%{user} is gone from the stack. %{next_user} is up next. Please use `unstack` when you are done.'
             other: '%{user} is gone from the stack.'
           help:
             unstack:

@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
+require 'active_support/core_ext/array/conversions' # Array.to_sentence, for i18n
+
 module Lita
   module Handlers
     class Stacker < Handler
-      VERSION = '0.2.0'
+      VERSION = '1.0.0'
+
+      config :timeout, type: Integer, default: 8 * 60 * 60 # 8.hours
 
       route(/^stack(\s+(on.*|\@\p{Word}+\s*))?$/, :lifo_add, help: {
               t('add.help.simple.command') => t('add.help.simple.description'),
@@ -27,47 +31,45 @@ module Lita
       def lifo_add(response)
         return if incompatible?(response)
 
-        # There is no LSCAN Redis command, so we can hack one.
-        # I am pretty sure Lita is synchronous so it is not possible for this
-        # to be inconsistent. But in the interest of robustness, run it as a
-        # Lua script, to keep it atomic.
-        script = <<~LUA
-          for i=0,(redis.call('llen', KEYS[1])-1) do
-            if (redis.call('lindex', KEYS[1], i) == ARGV[1]) then
-              return -1
-            end
-          end
-          redis.call('rpush', KEYS[1], ARGV[1])
-          return redis.call('lindex', KEYS[1], -2)
-        LUA
-
         user_to_add = pick_subject(response)
 
-        result = redis.eval(script, [response.message.source.room], [user_to_add])
+        clean_stack(response.message.source.room)
+        score = redis.zscore(response.message.source.room, user_to_add)
 
-        if result == -1
-          type = response.user.mention_name.tr('@', '') == user_to_add ? 'self' : 'other'
-          response.reply(t("add.collision.#{type}", user: "@#{user_to_add}"))
+        if score
+          predecessors = redis.zrevrangebyscore(response.message.source.room, "(#{score}", 0)
+          type = predecessors.empty? ? 'first' : 'after'
+          response.reply(t("add.collision.#{type}", user: "@#{user_to_add}", after: after_list(predecessors)))
           return
         end
 
-        if result
-          response.reply(t('add.after', user: "@#{user_to_add}", after: "@#{result}"))
-        else
+        script = <<~LUA
+          local predecessors = redis.call('zrangebyscore', KEYS[1], '-inf', '+inf')
+          redis.call('zadd', KEYS[1], ARGV[2], ARGV[1])
+          return predecessors
+        LUA
+
+        result = redis.eval(script, [response.message.source.room], [user_to_add, Time.now.to_f])
+
+        if result.empty?
           response.reply(t('add.first', user: "@#{user_to_add}"))
+        else
+          response.reply(t('add.after', user: "@#{user_to_add}", after: after_list(result)))
         end
       end
 
       def lifo_peek(response)
         return if incompatible?(response)
-        contents = redis.lrange(response.message.source.room, 0, -1)
+
+        clean_stack(response.message.source.room)
+        contents = redis.zrangebyscore(response.message.source.room, '-inf', '+inf')
 
         if contents.empty?
           response.reply(t('peek.empty'))
           return
         end
 
-        text_list = contents.each_with_index.map { |item, idx| "#{idx + 1}. #{item}" }.join("\n")
+        text_list = contents.each_with_index.map { |item, idx| "#{idx + 1}. @#{item}" }.join("\n")
         response.reply(t('peek.list', newline_separated_list: text_list))
       end
 
@@ -76,15 +78,19 @@ module Lita
 
         to_remove = pick_subject(response)
 
+        # Simulate ZPOPMIN, which is only available starting in Redis 5.
         script = <<~LUA
-          local first = redis.call('lindex', KEYS[1], 0) == ARGV[1]
-          redis.call('lrem', KEYS[1], 0, ARGV[1])
-          if first then
-            return redis.call('lindex', KEYS[1], 0)
+          local rank = redis.call('zrank', KEYS[1], ARGV[1])
+          redis.call('zrem', KEYS[1], ARGV[1])
+
+          if (rank ~= 0) then
+            return nil
           end
-          return first
+
+          return redis.call('zrange', KEYS[1], 0, 0)[1]
         LUA
 
+        clean_stack(response.message.source.room)
         next_user = redis.eval(script, [response.message.source.room], [to_remove])
 
         to_remove = "@#{to_remove}"
@@ -103,6 +109,14 @@ module Lita
       end
 
       private
+
+      def after_list(list)
+        list.map { |x| "@#{x}" }.to_sentence
+      end
+
+      def clean_stack(stack)
+        redis.zremrangebyscore(stack, 0, Time.now.to_f - config.timeout)
+      end
 
       def incompatible?(response)
         response.message.source.private_message?

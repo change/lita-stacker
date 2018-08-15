@@ -27,7 +27,20 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
   end
 
   shared_context 'in a room' do
-    let(:command_options) { { from: Lita::Room.create_or_update('#public_channel') } }
+    let(:channel) { Lita::Room.create_or_update('#public_channel') }
+    let(:command_options) { { from: channel } }
+  end
+
+  shared_examples 'it clears old stacks' do
+    before do
+      subject.redis.zadd(channel.name, Time.now.to_f - 3 * subject.config.timeout, 'Trillian')
+      subject.redis.zadd(channel.name, Time.now.to_f - 2 * subject.config.timeout, 'Marvin')
+    end
+
+    it 'clears old stacks' do
+      send_command(command, command_options)
+      expect(subject.redis.zrangebyscore(channel.name, '-inf', '+inf') & %w[Trillian Marvin]).to be_empty
+    end
   end
 
   describe '#lifo_add' do
@@ -43,6 +56,8 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
       context 'when the message is in a room' do
         include_context 'in a room'
+
+        it_behaves_like 'it clears old stacks'
 
         it 'informs the user they have the floor' do
           expect(replies.last).to include 'have the floor'
@@ -67,17 +82,19 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
         end
 
         context 'when the user is already in the stack' do
+          let(:existing_stack) { ['Trillian'] }
+
           before do
             send_command(command, command_options)
           end
 
           it 'informs the user' do
-            expect(replies.last).to match(/#{sentence_subject}.*already/)
+            expect(replies.last).to match(/already.*behind @Trillian/)
           end
 
           it 'does not add to the stack' do
             send_command 'stack show', command_options
-            expect(replies.last.split(/\n/).grep(/\d+\. #{target_user.mention_name.tr('@', '')}/).size).to eq 1
+            expect(replies.last.split(/\n/).grep(/\d+\. @?#{target_user.mention_name}/).size).to eq 1
           end
         end
       end
@@ -88,7 +105,6 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
       include_examples 'adding users' do
         let(:target_user) { user }
-        let(:sentence_subject) { 'You' }
       end
     end
 
@@ -96,9 +112,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
       let(:target_user) { Lita::User.create(123, name: 'Zaphod') }
       let(:command) { "stack @#{target_user.name}" }
 
-      include_examples 'adding users' do
-        let(:sentence_subject) { "@#{target_user.mention_name}" }
-      end
+      include_examples 'adding users'
     end
 
     context 'with an on command' do
@@ -106,7 +120,6 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
       include_examples 'adding users' do
         let(:target_user) { user }
-        let(:sentence_subject) { 'You' }
       end
     end
 
@@ -118,7 +131,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
       context 'when the message is in a room' do
         include_context 'in a room'
 
-        it 'adds the current user' do
+        it 'does not add the current user' do
           send_command 'stack show', command_options
           expect(replies.last).to eq('The stack is empty!')
         end
@@ -134,6 +147,8 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
     context 'when the message is in a room' do
       include_context 'in a room'
 
+      it_behaves_like 'it clears old stacks'
+
       context 'when the stack is empty' do
         it 'informs the user' do
           send_command(command, command_options)
@@ -148,7 +163,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
         it 'lists the users' do
           send_command(command, command_options)
-          expect(replies.last).to match(/\d+\. #{user.mention_name.tr('@', '')}/)
+          expect(replies.last).to match(/\d+\. @?#{user.mention_name.tr('@', '')}/)
         end
       end
     end
@@ -161,6 +176,8 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
     context 'when the message is in a room' do
       include_context 'in a room'
+
+      it_behaves_like 'it clears old stacks'
 
       let(:other_user) { Lita::User.create(123, name: 'Zaphod', mention_name: '@beeblebrox') }
 
