@@ -141,7 +141,7 @@ module Lita
       end
 
       def add_collision(response, user_to_add, score, room)
-        predecessors = redis.zrevrangebyscore(room, "(#{score}", 0)
+        predecessors = redis.zrangebyscore(room, 0, "(#{score}")
         type = predecessors.empty? ? 'first' : 'after'
         response.reply(t("add.collision.#{type}", user: "@#{user_to_add}", after: after_list(predecessors)))
       end
