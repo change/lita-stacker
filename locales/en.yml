@@ -3,6 +3,7 @@ en:
     handlers:
       stacker:
         add:
+          not_found: Cannot find user named %{user}
           first: '%{user}, you have the floor! Please use `unstack` when you are done.'
           after: '%{user} has been added after %{after}.'
           help:
@@ -16,6 +17,7 @@ en:
               command: 'stack @user'
               description: add @user to the stack list
         remove:
+          not_found: Cannot find user named %{user}
           complete:
             first: '%{user} is gone from the stack. %{next_user} is up next. Please use `unstack` when you are done.'
             other: '%{user} is gone from the stack.'

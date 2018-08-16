@@ -42,7 +42,10 @@ module Lita
           def list_scores(list)
             # Add an offset so the scores are not identical
             offset = config.offset
-            list.each_with_index.map { |name, i| [Time.now.to_f - config.timeout + offset * i, name] }
+            list.each_with_index.each_with_object([]) do |(name, i), l|
+              user = Lita::User.find_by_mention_name(name) || Lita::User.find_by_name(name)
+              l.push([Time.now.to_f - config.timeout + offset * i, user.id]) if user
+            end
           end
         end
       end
