@@ -79,6 +79,14 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
             send_command 'stack show', command_options
             expect(replies.last).to include(target_user.mention_name)
           end
+
+          context 'when the stack has more than 2 entries' do
+            let(:existing_stack) { %w{Trillian Ford Arthur Marvin} }
+
+            it 'announces the whole list' do
+              expect(replies.last).to match Regexp.new existing_stack.join('.*')
+            end
+          end
         end
 
         context 'when the user is already in the stack' do
