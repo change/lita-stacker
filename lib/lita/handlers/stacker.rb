@@ -5,7 +5,7 @@ require 'active_support/core_ext/array/conversions' # Array.to_sentence, for i18
 module Lita
   module Handlers
     class Stacker < Handler
-      VERSION = '1.0.0'
+      VERSION = '0.3.0'
 
       config :timeout, type: Integer, default: 8 * 60 * 60 # 8.hours
 
