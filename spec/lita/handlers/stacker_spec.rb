@@ -26,7 +26,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
     end
   end
 
-  shared_context 'in a room' do
+  shared_context 'in a room' do # rubocop:disable RSpec/ContextWording # clumsy otherwise
     let(:channel) { Lita::Room.create_or_update('#public_channel') }
     let(:command_options) { { from: channel } }
   end
@@ -186,9 +186,9 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
     context 'when the message is in a room' do
       include_context 'in a room'
 
-      it_behaves_like 'it clears old stacks'
-
       let(:other_user) { Lita::User.create(123, name: 'Zaphod', mention_name: '@beeblebrox') }
+
+      it_behaves_like 'it clears old stacks'
 
       before do
         send_command('stack', command_options)

@@ -108,7 +108,7 @@ RSpec.configure do |config|
   # as the one that triggered the failure.
   Kernel.srand config.seed
 
-  config.before(:example) do
+  config.before do
     Redis.new.flushdb
   end
 end

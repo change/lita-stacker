@@ -2,13 +2,14 @@
 
 RSpec.describe Lita::Handlers::Stacker::Upgrade::SortedSets, lita_handler: true do
   before { subject.redis.del(Lita::Handlers::Stacker::Upgrade::SortedSets::SUPPORT_KEY) }
+
   after { subject.redis.del(Lita::Handlers::Stacker::Upgrade::SortedSets::SUPPORT_KEY) }
 
   let(:payload) { {} }
 
   it 'increments the support flag' do
     subject.update_store(payload)
-    expect(subject.redis.exists(Lita::Handlers::Stacker::Upgrade::SortedSets::SUPPORT_KEY))
+    expect(subject.redis.exists(Lita::Handlers::Stacker::Upgrade::SortedSets::SUPPORT_KEY)).to be true
   end
 
   context 'when there are stores to upgrade' do
