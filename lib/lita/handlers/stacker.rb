@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'active_support/core_ext/array/conversions' # Array.to_sentence, for i18n
-
 module Lita
   module Handlers
     class Stacker < Handler
@@ -107,6 +105,10 @@ module Lita
       private
 
       def after_list(list)
+        # This require cannot be at the top level, or the gemspec cannot be
+        # loaded without it already being present, which prevents the
+        # dependency being asserted.
+        require 'active_support/core_ext/array/conversions'
         list.map { |x| "@#{x}" }.to_sentence
       end
 
