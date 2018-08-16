@@ -3,9 +3,6 @@ en:
     handlers:
       stacker:
         add:
-          collision:
-            first: '%{user} already has the floor. Please use `unstack` when you are done.'
-            after: '%{user} is already in the stack list, behind %{after}'
           first: '%{user}, you have the floor! Please use `unstack` when you are done.'
           after: '%{user} has been added after %{after}.'
           help:

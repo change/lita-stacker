@@ -89,12 +89,21 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
           end
 
           it 'informs the user' do
-            expect(replies.last).to match(/already.*behind @Trillian/)
+            expect(replies.last).to match(/after @Trillian/)
           end
 
-          it 'does not add to the stack' do
+          it 'does not include the user in the list of predecessors' do
+            expect(replies.last).not_to match(/after.*#{target_user.mention_name}/)
+          end
+
+          it 'does not add an additional the stack' do
             send_command 'stack show', command_options
             expect(replies.last.scan(/^\d+\.\s*@?#{target_user.mention_name}/).count).to eq 1
+          end
+
+          it 'moves them to the bottom' do
+            send_command 'stack show', command_options
+            expect(replies.last).to end_with target_user.mention_name
           end
         end
       end
