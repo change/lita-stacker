@@ -33,7 +33,7 @@ RSpec.describe Lita::Handlers::Stacker::Upgrade::SortedSets, lita_handler: true 
       expect(subject.redis.zrangebyscore(:channel, '-inf', '+inf')).to eq lists[:channel]
     end
 
-    it 'removes duplicate stacks, in the correct order' do
+    it 'removes duplicate stacks, maintaining the correct order' do
       subject.update_store(payload)
       expect(subject.redis.zrangebyscore(:channel_with_duplicates, '-inf', '+inf')).to eq lists[:channel]
     end
