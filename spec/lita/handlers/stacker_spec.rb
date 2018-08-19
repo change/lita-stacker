@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
+  let(:arthur) { Lita::User.create(42, name: 'Arthur', mention_name: 'dent') }
+  let(:ford) { Lita::User.create(23, name: 'Ford', mention_name: 'prefect') }
+  let(:marvin) { Lita::User.create(-1, name: 'marvin', mention_name: 'marvin') }
+  let(:trillian) { Lita::User.create(456, name: 'Tricia MacMillian', mention_name: 'trillian') }
+  let(:zaphod) { Lita::User.create(123, name: 'Zaphod', mention_name: 'beeblebrox') }
+
   it { is_expected.to route_command('stack').to(:lifo_add) }
   it { is_expected.to route_command('stack @user').to(:lifo_add) }
   it { is_expected.to route_command('stack on that').to(:lifo_add) }
@@ -26,15 +32,28 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
     end
   end
 
-  shared_context 'in a room' do
-    let(:command_options) { { from: Lita::Room.create_or_update('#public_channel') } }
+  shared_context 'in a room' do # rubocop:disable RSpec/ContextWording # clumsy otherwise
+    let(:channel) { Lita::Room.create_or_update('#public_channel') }
+    let(:command_options) { { from: channel } }
+  end
+
+  shared_examples 'it clears old stacks' do
+    before do
+      subject.redis.zadd(channel.name, Time.now.to_f - 3 * subject.config.timeout, trillian.id)
+      subject.redis.zadd(channel.name, Time.now.to_f - 2 * subject.config.timeout, marvin.id)
+    end
+
+    it 'clears old stacks' do
+      send_command(command, command_options)
+      expect(subject.redis.zrangebyscore(channel.name, '-inf', '+inf') & [trillian.id, marvin.id]).to be_empty
+    end
   end
 
   describe '#lifo_add' do
     let(:existing_stack) { [] }
 
     before do
-      existing_stack.each { |s| send_command("stack @#{s}", command_options) }
+      existing_stack.each { |u| send_command("stack @#{u.mention_name}", command_options) }
       send_command(command, command_options)
     end
 
@@ -44,40 +63,61 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
       context 'when the message is in a room' do
         include_context 'in a room'
 
+        it_behaves_like 'it clears old stacks'
+
         it 'informs the user they have the floor' do
           expect(replies.last).to include 'have the floor'
         end
 
         it 'adds the current user' do
           send_command 'stack show', command_options
-          expect(replies.last).to include(target_user.name)
+          expect(replies.last).to include(target_user.mention_name)
         end
 
         context 'when there is a stack' do
-          let(:existing_stack) { ['Trillian'] }
+          let(:existing_stack) { [trillian] }
 
           it 'informs the user who is before them' do
-            expect(replies.last).to include "after @#{existing_stack.last}"
+            expect(replies.last).to include "after @#{existing_stack.last.mention_name}"
           end
 
           it 'adds the user' do
             send_command 'stack show', command_options
             expect(replies.last).to include(target_user.mention_name)
           end
+
+          context 'when the stack has more than 2 entries' do
+            let(:existing_stack) { [trillian, ford, arthur, marvin] }
+
+            it 'announces the whole list' do
+              expect(replies.last).to match Regexp.new existing_stack.map(&:mention_name).join('.*')
+            end
+          end
         end
 
         context 'when the user is already in the stack' do
+          let(:existing_stack) { [trillian] }
+
           before do
             send_command(command, command_options)
           end
 
           it 'informs the user' do
-            expect(replies.last).to match(/#{sentence_subject}.*already/)
+            expect(replies.last).to match(/after @#{existing_stack.last.mention_name}/)
           end
 
-          it 'does not add to the stack' do
+          it 'does not include the user in the list of predecessors' do
+            expect(replies.last).not_to match(/after.*#{target_user.mention_name}/)
+          end
+
+          it 'does not add an additional the stack' do
             send_command 'stack show', command_options
-            expect(replies.last.split(/\n/).grep(/\d+\. #{target_user.mention_name.tr('@', '')}/).size).to eq 1
+            expect(replies.last.scan(/^\d+\.\s*@?#{target_user.mention_name}/).count).to eq 1
+          end
+
+          it 'moves them to the bottom' do
+            send_command 'stack show', command_options
+            expect(replies.last).to end_with target_user.mention_name
           end
         end
       end
@@ -88,17 +128,14 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
       include_examples 'adding users' do
         let(:target_user) { user }
-        let(:sentence_subject) { 'You' }
       end
     end
 
     context 'with another user name' do
-      let(:target_user) { Lita::User.create(123, name: 'Zaphod') }
-      let(:command) { "stack @#{target_user.name}" }
+      let(:target_user) { zaphod }
+      let(:command) { "stack @#{target_user.mention_name}" }
 
-      include_examples 'adding users' do
-        let(:sentence_subject) { "@#{target_user.mention_name}" }
-      end
+      include_examples 'adding users'
     end
 
     context 'with an on command' do
@@ -106,7 +143,6 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
       include_examples 'adding users' do
         let(:target_user) { user }
-        let(:sentence_subject) { 'You' }
       end
     end
 
@@ -118,7 +154,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
       context 'when the message is in a room' do
         include_context 'in a room'
 
-        it 'adds the current user' do
+        it 'does not add the current user' do
           send_command 'stack show', command_options
           expect(replies.last).to eq('The stack is empty!')
         end
@@ -134,6 +170,8 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
     context 'when the message is in a room' do
       include_context 'in a room'
 
+      it_behaves_like 'it clears old stacks'
+
       context 'when the stack is empty' do
         it 'informs the user' do
           send_command(command, command_options)
@@ -148,7 +186,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
         it 'lists the users' do
           send_command(command, command_options)
-          expect(replies.last).to match(/\d+\. #{user.mention_name.tr('@', '')}/)
+          expect(replies.last).to match(/\d+\. @?#{user.mention_name.tr('@', '')}/)
         end
       end
     end
@@ -162,11 +200,13 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
     context 'when the message is in a room' do
       include_context 'in a room'
 
-      let(:other_user) { Lita::User.create(123, name: 'Zaphod', mention_name: '@beeblebrox') }
+      let(:other_user) { zaphod }
+
+      it_behaves_like 'it clears old stacks'
 
       before do
         send_command('stack', command_options)
-        send_command("stack #{other_user.mention_name}", command_options)
+        send_command("stack @#{other_user.mention_name}", command_options)
       end
 
       context 'when the the top of the stack unstacks' do
@@ -178,7 +218,7 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
 
       context 'when the another user unstacks' do
         it 'does not announce the first user' do
-          send_command("unstack #{other_user.mention_name}", command_options)
+          send_command("unstack @#{other_user.mention_name}", command_options)
           expect(replies.last).not_to include user.mention_name
         end
       end

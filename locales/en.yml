@@ -3,10 +3,8 @@ en:
     handlers:
       stacker:
         add:
-          collision:
-            self: You are already in the stack list!
-            other: '%{user} is already in the stack list!'
-          first: '%{user}, you have the floor!'
+          not_found: Cannot find user named %{user}
+          first: '%{user}, you have the floor! Please use `unstack` when you are done.'
           after: '%{user} has been added after %{after}.'
           help:
             simple:
@@ -19,8 +17,9 @@ en:
               command: 'stack @user'
               description: add @user to the stack list
         remove:
+          not_found: Cannot find user named %{user}
           complete:
-            first: '%{user} is gone from the stack. %{next_user} is up next.'
+            first: '%{user} is gone from the stack. %{next_user} is up next. Please use `unstack` when you are done.'
             other: '%{user} is gone from the stack.'
           help:
             unstack:
@@ -36,12 +35,20 @@ en:
           empty: The stack is empty!
           list: "Stacks:\n%{newline_separated_list}"
           help:
-            singular:
-              command: stack show
-              description: show the list of stacks
-            plural:
-              command: stacks show
-              description: show the list of stacks
+            show:
+              singular:
+                command: stack show
+                description: show the list of stacks
+              plural:
+                command: stacks show
+                description: show the list of stacks
+            list:
+              singular:
+                command: stack list
+                description: show the list of stacks
+              plural:
+                command: stacks list
+                description: show the list of stacks
         clear:
           complete: 'Stacks cleared by %{user}'
           help:

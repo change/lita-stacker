@@ -14,3 +14,15 @@ Metrics/AbcSize:
 # Rely on AbcSize
 MethodLength:
   Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+require: rubocop-rspec
+
+RSpec/NestedGroups:
+  Enabled: false
+
+# Too many implicit subjects
+RSpec/NamedSubject:
+  Enabled: false

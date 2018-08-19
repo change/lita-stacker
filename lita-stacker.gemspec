@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ['lib']
 
+  spec.add_runtime_dependency 'activesupport', '~> 5.2'
   spec.add_runtime_dependency 'lita', '~> 4.0'
 
   spec.add_development_dependency 'bundler', '~> 1.16'
@@ -27,4 +28,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec', '>= 3.7.0'
   spec.add_development_dependency 'rubocop', '>= 0.58.1'
+  spec.add_development_dependency 'rubocop-rspec', '>= 1.28.0'
 end
