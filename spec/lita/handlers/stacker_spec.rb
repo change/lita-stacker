@@ -6,6 +6,8 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
   let(:marvin) { Lita::User.create(-1, name: 'marvin', mention_name: 'marvin') }
   let(:trillian) { Lita::User.create(456, name: 'Tricia MacMillian', mention_name: 'trillian') }
   let(:zaphod) { Lita::User.create(123, name: 'Zaphod', mention_name: 'beeblebrox') }
+  # Make sure we have a mention_name
+  let(:user) { Lita::User.create(1, name: 'Test User', mention_name: 'test_user') }
 
   it { is_expected.to route_command('stack').to(:lifo_add) }
   it { is_expected.to route_command('stack @user').to(:lifo_add) }
@@ -53,7 +55,9 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
     let(:existing_stack) { [] }
 
     before do
-      existing_stack.each { |u| send_command("stack @#{u.mention_name}", command_options) }
+      existing_stack.each do |u|
+        send_command("stack @#{u.mention_name}", command_options)
+      end
       send_command(command, command_options)
     end
 
@@ -118,6 +122,18 @@ RSpec.describe Lita::Handlers::Stacker, lita_handler: true do
           it 'moves them to the bottom' do
             send_command 'stack show', command_options
             expect(replies.last).to end_with target_user.mention_name
+          end
+
+          context 'when the user is first in the stack' do
+            let(:existing_stack) { [target_user, trillian] }
+
+            it 'informs the next user of their taking the floor' do
+              expect(replies[-3]).to match(/#{trillian.mention_name}.*floor/)
+            end
+
+            it 'does not include the user in the list of predecessors' do
+              expect(replies.last).not_to match(/after.*#{target_user.mention_name}/)
+            end
           end
         end
       end

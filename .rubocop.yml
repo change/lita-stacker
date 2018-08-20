@@ -9,7 +9,7 @@ Metrics/BlockLength:
     - spec/**/*_spec.rb
 
 Metrics/AbcSize:
-  Max: 20
+  Max: 25
 
 # Rely on AbcSize
 MethodLength:

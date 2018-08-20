@@ -38,11 +38,13 @@ module Lita
           return
         end
 
-        result = perform_add(response.message.source.room, user_to_add)
+        (result, announce_floor) = perform_add(response.message.source.room, user_to_add)
 
         if result.empty?
           response.reply(t('add.first', user: subject_name(user_to_add)))
         else
+          # Special case: head of the stack changed, the floor may have changed.
+          response.reply(t('add.first', user: subject_name(result.first))) if announce_floor
           response.reply(t('add.after', user: subject_name(user_to_add), after: after_list(result)))
         end
       end
@@ -94,6 +96,9 @@ module Lita
       def perform_add(room, user)
         clean_stack(room)
 
+        # Special case: user is at the top of the stack:
+        announce_floor = redis.zrank(room, user.id).zero?
+
         script = <<~LUA
           local predecessors = redis.call('zrangebyscore', KEYS[1], '-inf', '+inf')
           redis.call('zadd', KEYS[1], ARGV[2], ARGV[1])
@@ -102,7 +107,7 @@ module Lita
 
         result = redis.eval(script, [room], [user.id, Time.now.to_f])
         result.delete(user.id)
-        result
+        [result, announce_floor]
       end
 
       def perform_remove(room, user)
