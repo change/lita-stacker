@@ -97,7 +97,7 @@ module Lita
         clean_stack(room)
 
         # Special case: user is at the top of the stack:
-        announce_floor = redis.zrank(room, user.id) == 0 # rubocop:disable Style/NumericPredicate # nil.zero? blows up
+        announce_floor = redis.zrank(room, user.id)&.zero?
 
         script = <<~LUA
           local predecessors = redis.call('zrangebyscore', KEYS[1], '-inf', '+inf')
