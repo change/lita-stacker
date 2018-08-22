@@ -5,7 +5,7 @@ en:
         add:
           not_found: Cannot find user named %{user}
           first: '%{user}, you have the floor! Please use `unstack` when you are done.'
-          after: '%{user} has been added after %{after}.'
+          after: "%{user} has been added after %{after}\u200B." # add a zero-width space so that Slack will link the name next to the period.
           help:
             simple:
               command: stack
