@@ -60,7 +60,8 @@ And you can see that you’re no longer there (using an alternative command):
 ![stacks list](https://raw.githubusercontent.com/change/lita-stacker/erik/readme/i/stack_show_missing.png)
 
 You can also take care of this for someone else (perhaps someone who left to
-go to another meeting, and forgot to unstack):
+go to another meeting, and forgot to unstack. Or perhaps it was not you who
+came to deliver the message last night):
 
 ![unstack @Godot](https://raw.githubusercontent.com/change/lita-stacker/erik/readme/i/unstack_others.png)
 
@@ -80,7 +81,7 @@ Let’s leave them to contemplate their existence.
 ### Getting Help
 
 Finally, there are help commands for all of this. say `@litabot help stack`
-and the bot will reply to you privately with a list of commands. (Tip: if you
+and the bot will reply to you privately with a list of commands. (**Tip:** if you
 start in a private conversation with the bot you can drop the `@litabot` part
 of that (or any) command)
 
