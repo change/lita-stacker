@@ -23,11 +23,6 @@ gem "lita-stacker"
 
 ## Usage
 
-(**NOTE:** I am using a testing Slack instance to give a generic name to the
-bot. Unfortunately the colors it chose for our messages are red and green.
-Please let us know if this makes it harder to distinguish, and we will try to
-change the colors in the images).
-
 ### Adding to the Stack
 
 When you want to add to the conversation in a meeting, you add yourself to the stack:
