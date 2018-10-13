@@ -32,17 +32,17 @@ change the colors in the images).
 
 When you want to add to the conversation in a meeting, you add yourself to the stack:
 
-![stack (command)](https://raw.githubusercontent.com/change/lita-stacker/erik/readme/i/stack_self.png)
+![stack (command)](https://raw.githubusercontent.com/change/lita-stacker/master/i/stack_self.png)
 
 You can also stack for someone else:
 
-![stack @Vladimir](https://raw.githubusercontent.com/change/lita-stacker/erik/readme/i/stack_others.png)
+![stack @Vladimir](https://raw.githubusercontent.com/change/lita-stacker/master/i/stack_others.png)
 
 ### Showing the Stack
 
 If you’re not sure what the stack currently looks like, you can peek at its current state:
 
-![stack show](https://raw.githubusercontent.com/change/lita-stacker/erik/readme/i/stack_show.png)
+![stack show](https://raw.githubusercontent.com/change/lita-stacker/master/i/stack_show.png)
 
 (This command can also be invoked as `stack[s] {show|list}`)
 
@@ -51,19 +51,19 @@ If you’re not sure what the stack currently looks like, you can peek at its cu
 If you get tired of waiting for Godot, (or if your question or comment was
 addressed by someone higher in the stack), you can jump out at any time:
 
-![unstack](https://raw.githubusercontent.com/change/lita-stacker/erik/readme/i/unstack_self.png)
+![unstack](https://raw.githubusercontent.com/change/lita-stacker/master/i/unstack_self.png)
 
 (This command can also be invoked as `stack {drop|done}`)
 
 And you can see that you’re no longer there (using an alternative command):
 
-![stacks list](https://raw.githubusercontent.com/change/lita-stacker/erik/readme/i/stack_show_missing.png)
+![stacks list](https://raw.githubusercontent.com/change/lita-stacker/master/i/stack_show_missing.png)
 
 You can also take care of this for someone else (perhaps someone who left to
 go to another meeting, and forgot to unstack. Or perhaps it was not you who
 came to deliver the message last night):
 
-![unstack @Godot](https://raw.githubusercontent.com/change/lita-stacker/erik/readme/i/unstack_others.png)
+![unstack @Godot](https://raw.githubusercontent.com/change/lita-stacker/master/i/unstack_others.png)
 
 Note that the bot announces who next has the floor, and asks them to unstack when they are done.
 
@@ -71,7 +71,7 @@ Note that the bot announces who next has the floor, and asks them to unstack whe
 
 We can clear the whole slate:
 
-![stack clear](https://raw.githubusercontent.com/change/lita-stacker/erik/readme/i/stack_clear.png)
+![stack clear](https://raw.githubusercontent.com/change/lita-stacker/master/i/stack_clear.png)
 
 (This command can also be invoked as `stacks clear`)
 
@@ -85,7 +85,7 @@ and the bot will reply to you privately with a list of commands. (**Tip:** if yo
 start in a private conversation with the bot you can drop the `@litabot` part
 of that (or any) command)
 
-![help stack](https://raw.githubusercontent.com/change/lita-stacker/erik/readme/i/stack_help.png)
+![help stack](https://raw.githubusercontent.com/change/lita-stacker/master/i/stack_help.png)
 
 
 ## License
