@@ -1,5 +1,7 @@
 # lita-stacker
 
+A [Lita Chatbot](https://lita.io) plugin to manage meeting stacking.
+
 At Change.org we use Slack as a medium for all kinds of things, from the
 mission-critical to the utterly banal. Stacking is … somewhere in the middle.
 
