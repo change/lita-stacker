@@ -3,8 +3,6 @@
 module Lita
   module Handlers
     class Stacker < Handler
-      VERSION = '0.4.0'
-
       config :timeout, type: Integer, default: 8 * 60 * 60 # 8.hours
 
       route(/^stack(\s+(on.*|\@\p{Word}+\s*))?$/, :lifo_add, help: {

@@ -18,7 +18,7 @@ module Lita
           SUPPORT_KEY = 'support:zsets'
 
           def update_store(_payload)
-            return if redis.exists(SUPPORT_KEY)
+            return if redis.exists?(SUPPORT_KEY)
 
             redis.keys.each do |key|
               update_key(key)
